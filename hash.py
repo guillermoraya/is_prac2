@@ -14,7 +14,6 @@ def uab_md5(message: str, num_bits: int) -> Optional[int]:
         h = hashlib.md5(str.encode(message)).digest()
         num = int.from_bytes(h[:num_bytes], byteorder='big')
         num = num >> num_shift
-        print(h)
         return num
     except:
         return None
@@ -25,5 +24,3 @@ def second_preimage(message: str, num_bits : int) -> Optional[Tuple[str, int]]:
 def collision(num_bits: int) -> Optional[Tuple[str, str, int]]:
     pass
 
-
-uab_md5("abc", 4)
