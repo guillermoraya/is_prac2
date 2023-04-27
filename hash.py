@@ -4,12 +4,11 @@
 """
 
 import hashlib
-from typing import Optional, Tuple
 import string
 import random
- 
+import math
+from typing import Optional, Tuple
 
-# using random.choices()
 MAX_ITER = int(1e8)
 ASCII = string.ascii_uppercase + string.ascii_lowercase + string.digits
 
@@ -19,8 +18,8 @@ def random_string(N: int = 7) -> str:
 def uab_md5(message: str, num_bits: int) -> Optional[int]:
     try:
         assert(0 < num_bits <= 128)
-        num_shift =  8 - num_bits % 8
-        num_bytes = num_bits // 8 + 1
+        num_shift = -num_bits % 8
+        num_bytes = math.ceil(num_bits / 8)
         h = hashlib.md5(str.encode(message)).digest()
         num = int.from_bytes(h[:num_bytes], byteorder='big')
         num = num >> num_shift
@@ -29,7 +28,20 @@ def uab_md5(message: str, num_bits: int) -> Optional[int]:
         return None
 
 def second_preimage(message: str, num_bits : int) -> Optional[Tuple[str, int]]:
-    pass
+    out = None
+    h = uab_md5(message, num_bits)
+    hm = h
+    if h is None:
+        return
+    m = '-' if message[0] == '+' else '+'
+    for i in range(MAX_ITER):
+        res = random_string(num_bits)
+        h_prime = uab_md5(m + res, num_bits)
+        hm = max(hm, h_prime)
+        if h == h_prime:
+            out = (m + res, i)
+            break
+    return out
 
 def collision(num_bits: int) -> Optional[Tuple[str, str, int]]:
     hashDictionary = {}
@@ -44,7 +56,6 @@ def collision(num_bits: int) -> Optional[Tuple[str, str, int]]:
             hashDictionary[key] = newString
         else:
             foundCollision = (newString!=collision)
-
     return (collision, newString,iterationCounter)
 
 
