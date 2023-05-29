@@ -96,7 +96,9 @@ def _main():
     bit_range = np.arange(24) + 1
     bit_name = list(
         map(lambda n: str(n) + f" bit{'' if n == 1 else 's'}", bit_range))
-    repeats = 10
+    repeats = 20
+    info = pd.DataFrame(index=bit_name)
+
 
     # COL·LISIONS FORTES
     collisions, time = measure(collision, bit_range, repeats=repeats)
@@ -106,13 +108,14 @@ def _main():
 
     mu = collisions.mean(axis=-1)
     sigma = collisions.std(axis=-1, ddof=1) / np.sqrt(repeats)
-    info = pd.DataFrame({'mean': mu, 'mean error': sigma}, index=bit_name)
+    info["Iterations mean"] = list(map("{:8.1f}".format, mu))
+    info["Iterations error"] = list(map("{:8.2f}".format, sigma))
     plt.fill(list(bit_range) + list(bit_range)[::-1],
              list(mu + 1.96 * sigma) + list(mu - 1.96 * sigma)[::-1],
              c='blue', alpha=0.5, label='CI del 95% per la mitjana')
     plt.plot(bit_range, mu, c='red', linestyle='-.', label='Mitjana')
     plt.title("Col·lisions fortes")
-    plt.ylabel("Nombre de bits")
+    plt.ylabel("Nombre de iteracions")
     plt.xlabel("Nombre de bits")
     plt.yscale("log")
     plt.legend()
@@ -120,13 +123,14 @@ def _main():
     
     mu = time.mean(axis=-1)
     sigma = time.std(axis=-1, ddof=1) / np.sqrt(repeats)
-    timing = pd.DataFrame({'mean': mu, 'mean error': sigma}, index=bit_name)
+    info["Execution mean"] = list(map("{:8.3f}".format, 1e3 * mu))
+    info["Execution error"] = list(map("{:8.4f}".format, 1e3 * sigma))
     plt.fill(list(bit_range) + list(bit_range)[::-1],
              list(mu + 1.96 * sigma) + list(mu - 1.96 * sigma)[::-1],
              c='blue', alpha=0.5, label='CI del 95% per la mitjana')
     plt.plot(bit_range, mu, c='red', linestyle='-.', label='Mitjana')
     plt.title("Col·lisions fortes")
-    plt.ylabel("Temps d'execució")
+    plt.ylabel("Temps d'execució (s)")
     plt.xlabel("Nombre de bits")
     plt.yscale("log")
     plt.legend()
@@ -134,8 +138,7 @@ def _main():
 
     with open("strong_collision - tables.txt", 'w') as handler:
         handler.write(info.style.to_latex())
-        handler.write(timing.style.to_latex())
-
+        
     # COL·LISIONS DEBILS
     collisions, time = measure(
         second_preimage, bit_range, repeats=repeats, value_name="num_bits", message=random_string())
@@ -145,13 +148,14 @@ def _main():
 
     mu = collisions.mean(axis=-1)
     sigma = collisions.std(axis=-1, ddof=1) / np.sqrt(repeats)
-    info = pd.DataFrame({'mean': mu, 'mean error': sigma}, index=bit_name)
+    info["Iterations mean"] = list(map("{:10.1f}".format, mu))
+    info["Iterations error"] = list(map("{:10.2f}".format, sigma))
     plt.fill(list(bit_range) + list(bit_range)[::-1],
              list(mu + 1.96 * sigma) + list(mu - 1.96 * sigma)[::-1],
              c='blue', alpha=0.5, label='CI del 95% per la mitjana')
     plt.plot(bit_range, mu, c='red', linestyle='-.', label='Mitjana')
     plt.title("Col·lisions dèbils")
-    plt.ylabel("Nombre de bits")
+    plt.ylabel("Nombre de iteracions")
     plt.xlabel("Nombre de bits")
     plt.yscale("log")
     plt.legend()
@@ -159,13 +163,14 @@ def _main():
 
     mu = time.mean(axis=-1)
     sigma = time.std(axis=-1, ddof=1) / np.sqrt(repeats)
-    timing = pd.DataFrame({'mean': mu, 'mean error': sigma}, index=bit_name)
+    info["Execution mean"] = list(map("{:10.3f}".format, 1e3 * mu))
+    info["Execution error"] = list(map("{:10.4f}".format, 1e3 * sigma))
     plt.fill(list(bit_range) + list(bit_range)[::-1],
              list(mu + 1.96 * sigma) + list(mu - 1.96 * sigma)[::-1],
              c='blue', alpha=0.5, label='CI del 95% per la mitjana')
     plt.plot(bit_range, mu, c='red', linestyle='-.', label='Mitjana')
     plt.title("Col·lisions dèbils")
-    plt.ylabel("Temps d'execució")
+    plt.ylabel("Temps d'execució (s)")
     plt.xlabel("Nombre de bits")
     plt.yscale("log")
     plt.legend()
@@ -173,8 +178,7 @@ def _main():
 
     with open("weak_collision - tables.txt", 'w') as handler:
         handler.write(info.style.to_latex())
-        handler.write(timing.style.to_latex())
-
+        
 
 if __name__ == "__main__":
     import numpy as np
